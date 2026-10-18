@@ -23,4 +23,4 @@
 
 wheel已成功构建，两个平台依赖固定为不可变Git SHA，并生成uv.lock。主仓CPython3.14.8新建单一.venv执行 `uv sync --locked` 成功（18包含开发依赖），doctor确认三包0.1.0；在该环境再次36项pytest、ruff和合成JSON/HTML回放通过。未使用兄弟仓本地path完成此安装。
 
-仅clone主仓的目录外复验由三仓集成发布步骤执行，本文件不把尚未记录的步骤标成已通过。目录外wheel检查脚本为 `scripts/smoke_installed_wheel.py`。平台网页字段并不保证始终完整，未来仍需持续维护适配器。
+发布复核另从GitHub仅clone主仓，在新目录执行 `uv sync --locked --python 3.14.8` 成功。两个工具直接从锁定的公开Git提交安装到这一份新.venv，`lazy-trip doctor`、`xhs --version`、`dp --version`均通过，并在该环境用上述10条官方回执重建了真实示例JSON/HTML。目录外wheel检查脚本为 `scripts/smoke_installed_wheel.py`。平台网页字段并不保证始终完整，未来仍需持续维护适配器。
