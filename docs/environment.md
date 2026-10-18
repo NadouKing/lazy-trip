@@ -22,8 +22,10 @@ dazhongdianping-tools = { path = "../dazhongdianping-tools", editable = true }
 uv build
 # 在仓库之外创建临时目录和新环境，不复用 PYTHONPATH。
 uv venv <临时目录>/.venv --python 3.14
-uv pip install --python <临时目录>/.venv/Scripts/python.exe <主仓>/dist/lazy_trip-0.1.0-py3-none-any.whl
-# 两个工具包尚未发布 PyPI 时，需先按锁定Git SHA安装它们；不要依赖源码目录。
+# 从主仓导出固定Git来源和依赖，先安装它们，再装主仓wheel。
+uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file <临时目录>/requirements.txt
+uv pip install --python <临时目录>/.venv/Scripts/python.exe -r <临时目录>/requirements.txt
+uv pip install --no-deps --python <临时目录>/.venv/Scripts/python.exe <主仓>/dist/lazy_trip-0.1.0-py3-none-any.whl
 ```
 
 然后在临时目录运行 `python -c "import lazy_trip, xiaohongshu_tools, dazhongdianping_tools"`、`lazy-trip --help`、`lazy-trip doctor` 和离线合成例子。主要验收仍是只clone主仓的 `uv sync --locked`；裸wheel 的依赖默认来自索引，Git来源属于主仓的 uv配置，二者不能混淆。
