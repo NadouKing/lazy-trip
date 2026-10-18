@@ -99,6 +99,8 @@ uv run lazy-trip plan --request runtime/request.json --candidates runtime/candid
 
 ## 开发与来源
 
+每次功能开发和修复按[开发与PR交付](docs/development-delivery.md)提交可验证的草稿PR，并[处理审查](docs/review.md)、更新验收记录。本轮上游检查和工具版本接入顺序见[维护记录](docs/maintenance-2026-10-18.md)。
+
 ```powershell
 uv sync --locked
 uv run pytest
