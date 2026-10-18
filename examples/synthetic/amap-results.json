@@ -1,0 +1,289 @@
+{
+  "results": [
+    {
+      "id": "weather",
+      "tool": "maps_weather",
+      "arguments": {
+        "city": "广州"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"forecasts\": [{\"date\": \"2026-10-20\", \"dayweather\": \"\\u6674\", \"nightweather\": \"\\u6674\", \"daytemp\": \"25\", \"nighttemp\": \"20\"}]}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "poi:origin",
+      "tool": "maps_search_detail",
+      "arguments": {
+        "id": "o"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\": \"o\", \"name\": \"\\u8d77\\u70b9\", \"location\": \"113,23\"}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "poi:p",
+      "tool": "maps_search_detail",
+      "arguments": {
+        "id": "p"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\": \"p\", \"name\": \"\\u5ba4\\u5916\\u516c\\u56ed\", \"location\": \"113.001,23\"}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "poi:f",
+      "tool": "maps_search_detail",
+      "arguments": {
+        "id": "f"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\": \"f\", \"name\": \"\\u9910\\u9986\", \"location\": \"113.002,23\"}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "poi:i",
+      "tool": "maps_search_detail",
+      "arguments": {
+        "id": "i"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\": \"i\", \"name\": \"\\u5ba4\\u5185\\u5c55\\u9986\", \"location\": \"113.003,23\"}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:origin:p",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113,23",
+        "destination": "113.001,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:origin:f",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113,23",
+        "destination": "113.002,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:origin:i",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113,23",
+        "destination": "113.003,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:p:origin",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.001,23",
+        "destination": "113,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:p:f",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.001,23",
+        "destination": "113.002,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:p:i",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.001,23",
+        "destination": "113.003,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:f:origin",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.002,23",
+        "destination": "113,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:f:p",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.002,23",
+        "destination": "113.001,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:f:i",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.002,23",
+        "destination": "113.003,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:i:origin",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.003,23",
+        "destination": "113,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:i:p",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.003,23",
+        "destination": "113.001,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "route:i:f",
+      "tool": "maps_direction_walking",
+      "arguments": {
+        "origin": "113.003,23",
+        "destination": "113.002,23"
+      },
+      "receivedAt": "2026-10-18T12:52:16.274Z",
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"route\": {\"paths\": [{\"distance\": \"300\", \"duration\": \"240\"}]}}"
+          }
+        ]
+      }
+    }
+  ],
+  "synthetic": true
+}

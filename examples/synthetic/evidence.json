@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "evidence": [
+    {
+      "id": "e",
+      "source": "synthetic",
+      "sourceUrl": "https://example.com",
+      "title": "合成场馆与餐馆资料（非真实商家）"
+    }
+  ]
+}

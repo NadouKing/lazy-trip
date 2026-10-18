@@ -1,0 +1,55 @@
+{
+  "candidates": [
+    {
+      "id": "p",
+      "name": "室外公园",
+      "amapId": "p",
+      "kind": "play",
+      "environment": "outdoor",
+      "stayMinutes": 60,
+      "insideWalkingMeters": 300,
+      "costYuan": {
+        "min": 0,
+        "max": 0
+      },
+      "openingHours": "全天",
+      "evidenceIds": [
+        "e"
+      ]
+    },
+    {
+      "id": "f",
+      "name": "餐馆",
+      "amapId": "f",
+      "kind": "food",
+      "environment": "indoor",
+      "stayMinutes": 45,
+      "insideWalkingMeters": 20,
+      "costYuan": {
+        "min": 20,
+        "max": 30
+      },
+      "openingHours": "10:00-20:00",
+      "evidenceIds": [
+        "e"
+      ]
+    },
+    {
+      "id": "i",
+      "name": "室内展馆",
+      "amapId": "i",
+      "kind": "play",
+      "environment": "indoor",
+      "stayMinutes": 45,
+      "insideWalkingMeters": 100,
+      "costYuan": {
+        "min": 0,
+        "max": 0
+      },
+      "openingHours": "10:00-20:00",
+      "evidenceIds": [
+        "e"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "timezone": "Asia/Shanghai",
+  "people": 1,
+  "mode": "walking",
+  "bufferMinutes": 10,
+  "maxStops": 3,
+  "avoidMiddayHeat": true,
+  "city": "广州",
+  "area": "测试区域",
+  "origin": {
+    "name": "起点",
+    "amapId": "o"
+  },
+  "date": "2026-10-20",
+  "startTime": "14:00",
+  "endTime": "19:00",
+  "budgetYuan": 100,
+  "maxWalkingMeters": 3000
+}
