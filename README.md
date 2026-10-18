@@ -16,6 +16,12 @@ lazy-trip 把这些琐事串起来：小红书找灵感和真实评论样本，�
 
 当前版本由 **AI + CLI + 现有官方高德 MCP** 协同工作。CLI 没有内置独立大模型，不能独自理解所有帖子或调用聊天里的高德连接。它也不预订、不付款。
 
+## 三个仓库怎样配合
+
+[`xiaohongshu-tools`](https://github.com/NadouKing/xiaohongshu-tools) 和 [`dazhongdianping-tools`](https://github.com/NadouKing/dazhongdianping-tools) 都可以单独安装，提供各自的 Python 库与 CLI，也能供其他应用使用。Trip 是调用方：`lazy-trip → 两个 tools`，工具不依赖 Trip 或彼此。
+
+两个 tools 负责各平台的数据读取和合同；Trip 的 `research` 模块负责把它们适配成出行证据，再结合需求、候选、官方地图/天气和路线计算。相似的异步调用和 JSON 外壳方便接入，小红书的笔记/评论与点评的商家字段仍各自保留。共用一个安装环境只是为了省事，不要求工具绑定出行场景。
+
 ## 安装一次，共用一个环境
 
 需要 [uv](https://docs.astral.sh/uv/getting-started/installation/)、Git 和 Chrome/Chromium。Python 使用 **3.14 标准构建**，由 uv 准备；两个工具包随主项目装入同一个 `.venv`，无需另外安装 Node 或 Go。
@@ -110,6 +116,6 @@ uv build
 
 [架构](docs/architecture.md) · [部署](docs/deployment.md) · [环境与安装验收](docs/environment.md) · [工程规则](AGENTS.md)
 
-感谢 [travel-agent](https://github.com/huahuanao/travel-agent) 提供多来源出行思路，参考 [xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) 的网页状态读取、[dp-mcp](https://github.com/qianwj/dp-mcp) 的商家字段整理；本仓为原 Node 验证版规划器的 Python 迁移。工程分层与安装验收参考 [seller-ops-automation](https://github.com/DouNineGo/seller-ops-automation)，没有引入它的业务代码或运行依赖。
+感谢 [travel-agent](https://github.com/huahuanao/travel-agent) 提供多来源出行思路，参考 [xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) 的网页状态读取、[dp-mcp](https://github.com/qianwj/dp-mcp) 的商家字段整理；本仓为原 Node 验证版规划器的 Python 迁移。
 
 MIT License。登录态、Cookie、个人研究数据均不属于源码和示例。

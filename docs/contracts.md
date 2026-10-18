@@ -45,6 +45,14 @@ async with DianpingClient(profile_dir=..., chrome_path=..., headless=True) as dp
     shop = await dp.detail(shop_id)
 ```
 
-统一 envelope：schemaVersion/status/source/fetchedAt/method/elapsedMs/data；搜索 data.items/count/hasMore。会话 data.state=ready/login_required/verification_required，data.authenticated 为 bool。主仓保留平台详情字段，不会把 reviewsStatus=not_visible_on_page 变成“没有差评”。
+轻量公共约定：envelope 为 schemaVersion/status/source/fetchedAt/method/elapsedMs/data；搜索 data.items/count/hasMore。会话 data.state=ready/login_required/verification_required，data.authenticated 为 bool。相同字段名不保证相同站点能力：点评 ready 表示搜索页可访问，authenticated 只是已知登录 Cookie 名称存在；不能据此推断与小红书相同的登录或评论权限。
+
+| 合同归属 | 小红书 | 大众点评 |
+| --- | --- | --- |
+| 工具拥有的查询参数 | `sort`、`xsec_token`、`comment_limit` | `city`、详情 `limit` |
+| 工具拥有的详情字段 | 笔记、正文、一级评论样本与范围 | 商家、原始评分/价格/营业提示、评论可见性 |
+| Trip 拥有的适配 | `normalize_note` 生成 `xhs:` 证据、限定正文/评论与公开脱敏 | `collect` 生成 `dp:` 证据、保留商家字段与查询元数据 |
+
+两套库和 CLI 可独立安装使用；Trip 直接 import，由本仓承担兼容与业务适配。没有强制统一平台 API，也没有引入共享运行框架。主仓不会把 reviewsStatus=not_visible_on_page 变成“没有差评”，或把相对营业提示当完整时刻表。
 
 CLI 错误是 `{"error":{"code":"...","message":"..."}}`，不输出请求头、Cookie、签名 URL 或完整堆栈。research 部分失败写 errors，其他证据继续保存。stderr 仅进度提示。
