@@ -12,7 +12,6 @@ license = "MIT"
 authors = [{ name = "NadouKing" }]
 dependencies = [
   "xiaohongshu-tools>=0.1.0,<0.2",
-  "dazhongdianping-tools>=0.1.0,<0.2",
 ]
 
 [project.scripts]
@@ -22,8 +21,7 @@ lazy-trip = "lazy_trip.cli:main"
 dev = ["pytest>=8.4,<10", "ruff>=0.13,<1"]
 
 [tool.uv.sources]
-xiaohongshu-tools = { git = "https://github.com/NadouKing/xiaohongshu-tools", rev = "33918baf68ce084080fda9465166c9ec14057f33" }
-dazhongdianping-tools = { git = "https://github.com/NadouKing/dazhongdianping-tools", rev = "2938e43c76cd79f309a071abe9e0e15001c05739" }
+xiaohongshu-tools = { git = "https://github.com/NadouKing/xiaohongshu-tools", rev = "81f51162338cd7da81425b8da8622e6bb97a3a0f" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

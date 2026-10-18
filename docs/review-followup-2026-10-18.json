@@ -1,0 +1,52 @@
+{
+  "scope": "Dianping retired completely; Xiaohongshu plus existing official Amap MCP",
+  "runtimeCommit": "fbc3562a5b19ad421517c1c4e13a5ea229ec35ca",
+  "xiaohongshuPinnedCommit": "81f51162338cd7da81425b8da8622e6bb97a3a0f",
+  "checks": {
+    "python": "3.14.8",
+    "pytest": 49,
+    "ruff": "passed",
+    "diff": "passed",
+    "wheelBuild": "passed",
+    "isolatedInstalledWheel": "passed",
+    "cleanLockedSync": "passed",
+    "dianpingInstalledInCleanEnv": false
+  },
+  "liveResearch": {
+    "collectedAt": "2026-10-18T15:07:40.998Z",
+    "completedAt": "2026-10-18T15:07:54.800Z",
+    "mode": "visible",
+    "searches": 2,
+    "searchResultCounts": [
+      20,
+      20
+    ],
+    "evidenceCount": 2,
+    "commentSampleCount": 5,
+    "sources": [
+      "xiaohongshu"
+    ],
+    "errors": [],
+    "dianpingCalls": 0
+  },
+  "officialAmap": {
+    "checkedAt": "2026-10-18T14:49:09Z",
+    "merchantRatingCostHours": "observed in one cafe detail",
+    "missingFields": "observed in a subway station detail",
+    "aroundStrategy": 1,
+    "aroundCount": 20,
+    "rankingPositionsReturned": false,
+    "record": "amap-capability-2026-10-18.md"
+  },
+  "reviewFollowup": {
+    "oldFinding": "https://github.com/NadouKing/lazy-trip/pull/1#discussion_r4307447151",
+    "conclusion": "old Dianping lock/runtime mismatch was real; retired dependency and adapter entirely per current scope",
+    "nextAction": "request Codex review of final pushed head"
+  },
+  "limits": [
+    "Live scope is research/source retirement and official merchant lookup; weather/routes were not changed or re-tested in this check.",
+    "No bookings, payments, account writes or gate bypass.",
+    "Production main environment and local login/config files unchanged; acceptance environments are test-only.",
+    "PR branch candidate is not a main deployment."
+  ]
+}

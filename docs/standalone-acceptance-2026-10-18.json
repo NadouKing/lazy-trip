@@ -1,0 +1,82 @@
+{
+  "scope": "consumer-owned adaptation and partial-source handling",
+  "testedCodeSha": "c5a512810fea7099522015c744db6681b257c57b",
+  "localTests": 45,
+  "dependencyDirection": "lazy-trip -> independent platform libraries; no reverse or sibling dependency",
+  "commonConvention": [
+    "async lifecycle",
+    "result envelope",
+    "search items",
+    "safe error codes"
+  ],
+  "platformContracts": "Platform parameters and payloads remain owned by each tool; no shared base class or business protocol.",
+  "integration": {
+    "type": "installed-wheel-candidate-integration-read-only",
+    "startedAt": "2026-10-18T14:20:58.431665+00:00",
+    "completedAt": "2026-10-18T14:21:13.092216+00:00",
+    "testedTripSha": "c5a512810fea7099522015c744db6681b257c57b",
+    "testedToolsSha": {
+      "xiaohongshu": "3d531ede8144a87e13eddf56414c853d74a44ee1",
+      "dianping": "723f95502edaa87ebc0b91a59f4caf750e67bc63"
+    },
+    "python": "3.14.8",
+    "packages": {
+      "lazy-trip": "0.1.0",
+      "xiaohongshu-tools": "0.1.1",
+      "dazhongdianping-tools": "0.1.0"
+    },
+    "installedOutsideSource": true,
+    "configuration": "explicit profile options; no config file read",
+    "searchCounts": [
+      20,
+      5
+    ],
+    "evidenceCounts": {
+      "xiaohongshu": 2,
+      "dianping": 0
+    },
+    "commentSampleCounts": [
+      3,
+      2
+    ],
+    "errors": [
+      {
+        "source": "dianping",
+        "stage": "detail",
+        "shopId": "l4cKpuMdkud8e4wY",
+        "code": "verification_required",
+        "message": "平台要求人工验证，请在自己的浏览器中完成。"
+      }
+    ],
+    "publicOutputRedacted": true,
+    "dependencyLockUpdated": false,
+    "officialMapWeatherQueried": false,
+    "passed": false,
+    "partialBehaviorPassed": true
+  },
+  "regression": {
+    "before": "known platform errors could become source_error and session gates could be followed by more source calls",
+    "after": "explicit safe code mapping and stop only affected source on auth/verification; retain other evidence"
+  },
+  "deployment": "Candidate wheels tested together outside source; locked main dependencies unchanged pending tool PR integration.",
+  "date": "2026-10-18",
+  "timezone": "UTC",
+  "python": "3.14.8",
+  "localChecks": [
+    "ruff",
+    "pytest",
+    "build",
+    "git diff --check",
+    "outside-source wheel"
+  ],
+  "limitations": [
+    "Windows live only",
+    "read-only bounded samples",
+    "no map/weather query this change"
+  ],
+  "candidateProvenanceScan": {
+    "trackedFiles": 0,
+    "wheel": 0,
+    "sdist": 0
+  }
+}

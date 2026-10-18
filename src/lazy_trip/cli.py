@@ -20,7 +20,7 @@ from .research import collect
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(prog="lazy-trip", description=
-        "小红书找灵感，点评核实商家，官方高德查路线与天气，规划当天往返。")
+        "小红书找灵感，官方高德核实商家、路线与天气，规划当天往返。")
     root.add_argument("--version", action="version", version=__version__)
     root.add_argument("--config", help="显式路径设置；默认读取用户配置目录/lazy-trip/config.json")
     commands = root.add_subparsers(dest="command", required=True)
@@ -33,11 +33,10 @@ def parser() -> argparse.ArgumentParser:
     doctor.add_argument("--live", action="store_true")
     _browser_options(doctor)
     doctor.add_argument("--out")
-    research = commands.add_parser("research", help="串行读取帖子正文、评论样本和商家")
+    research = commands.add_parser("research", help="读取小红书正文和评论样本")
     research.add_argument("--request", required=True)
     research.add_argument("--out", required=True)
     research.add_argument("--notes", type=int, default=4)
-    research.add_argument("--shops", type=int, default=2)
     research.add_argument("--comments", type=int, default=20)
     _browser_options(research)
     maps = commands.add_parser("map-tasks", help="生成官方高德地点与天气任务")
@@ -60,14 +59,13 @@ def _browser_options(command):
                          help="显式路径设置文件，不存Cookie或令牌")
     command.add_argument("--xhs-profile", help="小红书专用用户目录")
     command.add_argument("--xhs-cookies", help="明确导入已有本地 Cookie 文件；不修改原文件")
-    command.add_argument("--dp-profile", help="点评专用用户目录")
     command.add_argument("--chrome", help="Chrome 可执行文件路径")
     command.add_argument("--headed", action="store_const", dest="headless", const=False,
                          default=None, help="显示浏览器窗口")
     command.add_argument("--timeout", type=float)
 
 
-def browser_options(args) -> tuple[dict, dict]:
+def browser_options(args) -> dict:
     explicit = args.config or os.environ.get("LAZY_TRIP_CONFIG")
     if os.name == "nt":
         config_root = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData/Local"))
@@ -76,30 +74,25 @@ def browser_options(args) -> tuple[dict, dict]:
     config_path = Path(explicit) if explicit else config_root / "lazy-trip/config.json"
     config = read_json(config_path) if explicit or config_path.is_file() else {}
     if not isinstance(config, dict) or any(key not in {"xiaohongshu", "dianping"} for key in config):
-        raise TripError("invalid_config", "配置仅允许 xiaohongshu 和 dianping 的路径与浏览器设置。")
+        raise TripError("invalid_config", "配置仅允许小红书路径与浏览器设置；旧点评段会被忽略。")
     allowed = {"profile_dir", "chrome_path", "headless", "timeout"}
-    result = []
-    for source, profile in (("xiaohongshu", args.xhs_profile), ("dianping", args.dp_profile)):
-        options = config.get(source, {})
-        if not isinstance(options, dict) or set(options) - allowed:
-            raise TripError("invalid_config", "平台配置仅允许 profile_dir/chrome_path/headless/timeout。")
-        options = {"profile_dir": None, "chrome_path": None, "headless": True, "timeout": 30.0,
-                   **options}
-        for name, value in (("profile_dir", profile), ("chrome_path", args.chrome),
-                             ("headless", args.headless), ("timeout", args.timeout)):
-            if value is not None:
-                options[name] = value
-        if not isinstance(options["timeout"], (int, float)) or isinstance(options["timeout"], bool) \
-                or not 1 <= options["timeout"] <= 300:
-            raise TripError("invalid_timeout", "timeout 必须在 1–300 秒之间。")
-        if type(options["headless"]) is not bool or any(options[name] is not None and
-                not isinstance(options[name], str) for name in ("profile_dir", "chrome_path")):
-            raise TripError("invalid_config", "浏览器路径须为字符串，headless 须为布尔值。")
-        result.append(options)
-    xhs, dp = result
+    xhs = config.get("xiaohongshu", {})
+    if not isinstance(xhs, dict) or set(xhs) - allowed:
+        raise TripError("invalid_config", "平台配置仅允许 profile_dir/chrome_path/headless/timeout。")
+    xhs = {"profile_dir": None, "chrome_path": None, "headless": True, "timeout": 30.0, **xhs}
+    for name, value in (("profile_dir", args.xhs_profile), ("chrome_path", args.chrome),
+                         ("headless", args.headless), ("timeout", args.timeout)):
+        if value is not None:
+            xhs[name] = value
+    if not isinstance(xhs["timeout"], (int, float)) or isinstance(xhs["timeout"], bool) \
+            or not 1 <= xhs["timeout"] <= 300:
+        raise TripError("invalid_timeout", "timeout 必须在 1–300 秒之间。")
+    if type(xhs["headless"]) is not bool or any(xhs[name] is not None and
+            not isinstance(xhs[name], str) for name in ("profile_dir", "chrome_path")):
+        raise TripError("invalid_config", "浏览器路径须为字符串，headless 须为布尔值。")
     if args.xhs_cookies:
         xhs["cookies_file"] = args.xhs_cookies
-    return xhs, dp
+    return xhs
 
 
 def print_json(value):
@@ -115,17 +108,17 @@ def save_or_print(value, path):
 
 
 async def doctor(args) -> dict:
-    xhs_options, dp_options = browser_options(args)
+    xhs_options = browser_options(args)
     candidates = [shutil.which(name) for name in ("google-chrome", "chrome", "chromium")]
     if os.name == "nt":
         candidates += [str(Path(os.environ.get("PROGRAMFILES", "C:/Program Files")) /
                            "Google/Chrome/Application/chrome.exe")]
     if sys.platform == "darwin":
         candidates += ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
-    chrome = xhs_options.get("chrome_path") or dp_options.get("chrome_path") or next(
+    chrome = xhs_options.get("chrome_path") or next(
         (item for item in candidates if item and Path(item).is_file()), None)
     packages = {}
-    for name in ("lazy-trip", "xiaohongshu-tools", "dazhongdianping-tools"):
+    for name in ("lazy-trip", "xiaohongshu-tools"):
         try:
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
@@ -134,10 +127,9 @@ async def doctor(args) -> dict:
               "chromeFound": bool(chrome and Path(chrome).is_file()),
               "amap": "复用宿主 AI 已连接的官方 MCP；独立 CLI 不检查或提取其配置。"}
     if args.live:
-        from dazhongdianping_tools import DianpingClient
         from xiaohongshu_tools import XiaohongshuClient
-        for source, factory, options in (("xiaohongshu", XiaohongshuClient, xhs_options),
-                                          ("dianping", DianpingClient, dp_options)):
+        sources = [("xiaohongshu", XiaohongshuClient, xhs_options)]
+        for source, factory, options in sources:
             try:
                 async with factory(**options) as client:
                     status = await client.check_session()
@@ -167,9 +159,9 @@ def main(argv: list[str] | None = None) -> int:
             save_or_print(asyncio.run(doctor(args)), args.out)
         elif args.command == "research":
             request = validate_request(read_json(args.request))
-            xhs, dp = browser_options(args)
+            xhs = browser_options(args)
             result = asyncio.run(collect(request, out=args.out, note_limit=args.notes,
-                shop_limit=args.shops, comment_limit=args.comments, xhs_options=xhs, dp_options=dp,
+                comment_limit=args.comments, xhs_options=xhs,
                 progress=lambda value: print(value, file=sys.stderr)))
             print_json({"saved": str(Path(args.out).resolve()),
                         "evidenceCount": len(result["evidence"]),

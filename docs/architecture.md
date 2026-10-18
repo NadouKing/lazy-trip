@@ -1,21 +1,20 @@
 # 架构
 
-三个独立 Python 分发包，共用主应用环境：
+一个可独立安装使用的小红书工具，以及一个依赖它的出行应用。点评已退出当前依赖和流程。Trip 部署时共用主应用环境：
 
 ```text
 当前 AI / 人
     │ CLI / Python API
 lazy_trip.cli ── research ── xiaohongshu_tools.XiaohongshuClient
-    │                    └─ dazhongdianping_tools.DianpingClient
     ├─ request：输入约束
     ├─ maps：官方 MCP 任务与真实回执校验
     ├─ planner：有界排列搜索，含回程与未知字段
     └─ render：静态安全 HTML
 
-当前 AI ── 已连接的官方 Amap MCP ── 地点 / 路线 / 天气
+当前 AI ── 已连接的官方 Amap MCP ── 商家 / 地点 / 路线 / 天气
 ```
 
-工具包只做平台读取，不依赖主仓；主仓直接 import 库，不通过子 CLI 交换临时 JSON。浏览器、Cookie、profile 的生命周期由平台库管理。collect 对每个客户端使用 async context manager，搜索与详情保持串行；离线排程不启动浏览器。
+工具包只做平台读取，不依赖主仓；主仓直接 import 库，不通过子 CLI 交换临时 JSON。浏览器、Cookie、profile 的生命周期由平台库管理。collect 对小红书客户端使用 async context manager，搜索与详情保持串行；离线排程不启动浏览器。
 
 `research` 输出证据，不自动把广告、负反馈、同名地点等语义判断交给正则。标题过滤只排除明显租赁/招聘项，AI 仍需阅读全文与评论样本，决定候选与偏好。AI 的语义提炼层目前属于宿主，不提供独立模型 Key 配置。
 
@@ -35,6 +34,10 @@ lazy_trip.cli ── research ── xiaohongshu_tools.XiaohongshuClient
 
 当前增加了可执行约束、来源 ID、闭环返程和未知状态检查；仍需宿主 AI 编排官方 MCP 与语义提炼。不能把这称作已完成无人值守的独立 Agent。下一阶段应按同样输入任务比较成功率、耗时与建议质量，而非单凭技术栈断言优于上游。
 
-## 工程来源
+## 接口与适配归属
 
-工程组织参考 DouNineGo/seller-ops-automation 的 CLI/平台/基础设施分层、src布局、wheel构建与源码外验收思想；未复制电商规则或凭证处理。平台实现与许可证说明由各工具仓独立维护。
+平台库与 CLI 都是可独立使用的正式入口。轻量公共约定只覆盖异步生命周期、结果外壳、搜索列表和安全错误；没有共享基类或额外接口包。各平台负责自己的参数和字段，不为 Trip 修改成统一的旅行模型。
+
+Trip 的 `research.py` 负责调用参数、查询策略、相关性过滤、`xhs:` 证据 ID、字段映射、公开脱敏和部分失败。小红书的 `sort`/`comment_limit` 与评论采样保留平台含义；消费预算、具体分店核对及规划判断属于下游。
+
+工具包不读取 Trip 配置，不接收旅行需求或候选，不导入 Trip 或彼此。工具版本由各仓维护；Trip 固定依赖并负责适配、兼容检查。安装进同一个 `.venv` 只复用依赖，不改变这些边界。
