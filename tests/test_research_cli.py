@@ -88,6 +88,52 @@ def test_login_error_safe_message():
     assert "secret" not in json.dumps(error)
 
 
+@pytest.mark.parametrize("code", ["authentication_required", "profile_busy", "chrome_not_found",
+                                  "cdp_timeout", "navigation_timeout", "parser_unavailable",
+                                  "shop_identity_mismatch", "page_data_unavailable"])
+def test_platform_error_codes_are_adapted_without_raw_messages(code):
+    class SourceError(Exception):
+        pass
+    error = SourceError("Cookie: private-token signed-url secret")
+    error.code = code
+    result = public_error(error)
+    assert result["code"] == code
+    assert "secret" not in json.dumps(result) and "private-token" not in json.dumps(result)
+
+
+def test_verification_stops_only_affected_source_and_retains_evidence(sample):
+    calls = []
+
+    class GateError(Exception):
+        code = "verification_required"
+
+    class GatedXhs(Xhs):
+        async def search(self, *args, **kwargs):
+            calls.append("xhs-search")
+            raise GateError("private signed URL")
+
+    result = asyncio.run(collect(sample["request"], xhs_factory=GatedXhs, dp_factory=Dp))
+    assert calls == ["xhs-search"]
+    assert result["errors"][0]["code"] == "verification_required"
+    assert result["evidence"][0]["source"] == "dianping"
+
+    class GatedDp(Dp):
+        async def search(self, *args, **kwargs):
+            return {"data": {"items": [{"id": "one"}, {"id": "two"}]}}
+
+        async def detail(self, identifier):
+            calls.append("dp-detail")
+            raise GateError("private signed URL")
+
+    calls.clear()
+    result = asyncio.run(collect(sample["request"], xhs_factory=Xhs, dp_factory=GatedDp,
+                                 shop_limit=2))
+    assert calls == ["dp-detail"]
+    assert len(result["evidence"]) == 1
+    assert result["errors"][0]["code"] == "verification_required"
+    assert "private signed URL" not in json.dumps(result)
+
+
 def test_url_and_keys_sanitized():
     value = public_data({"xsec_token": "secret", "cookie": "secret", "headers": {"x": "secret"},
                          "url": "https://example.com/n?xsec_token=secret&safe=1"})

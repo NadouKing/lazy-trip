@@ -56,3 +56,5 @@ async with DianpingClient(profile_dir=..., chrome_path=..., headless=True) as dp
 两套库和 CLI 可独立安装使用；Trip 直接 import，由本仓承担兼容与业务适配。没有强制统一平台 API，也没有引入共享运行框架。主仓不会把 reviewsStatus=not_visible_on_page 变成“没有差评”，或把相对营业提示当完整时刻表。
 
 CLI 错误是 `{"error":{"code":"...","message":"..."}}`，不输出请求头、Cookie、签名 URL 或完整堆栈。research 部分失败写 errors，其他证据继续保存。stderr 仅进度提示。
+
+Trip 显式适配工具的已知错误码，保留登录/验证、超时、解析未知和身份不符的区别，消息使用本仓安全文本；不转发原始异常。某来源出现登录或人工验证门禁后停止该来源的后续查询，其他来源与已取得证据保留。未知错误仍使用 `source_error`，不把任意异常字段视作可信公开文本。

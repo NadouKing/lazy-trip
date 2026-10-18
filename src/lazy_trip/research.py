@@ -6,6 +6,8 @@ from .errors import TripError, public_error
 from .io import now, public_data, public_url, write_json
 from .request import validate_request
 
+SESSION_GATES = {"login_required", "auth_required", "authentication_required", "verification_required"}
+
 
 def normalize_note(result: dict, feed: dict, comment_limit: int = 20) -> dict:
     data = result.get("data", {})
@@ -76,6 +78,7 @@ async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: i
         raise TripError("invalid_queries", "research.queries 需要带 keyword 的对象数组。")
     # Retain in-memory access tokens only for this process. Public evidence never includes them.
     seen, feeds = set(), []
+    xhs_blocked = False
     import re
     try:
         async with xhs_factory(**(xhs_options or {})) as xhs:
@@ -101,8 +104,11 @@ async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: i
                 except Exception as error:
                     bundle["errors"].append({"source": "xiaohongshu", "stage": "search",
                                              **public_error(error)})
+                    xhs_blocked = getattr(error, "code", None) in SESSION_GATES
                 persist()
-            for feed in feeds[:note_limit]:
+                if xhs_blocked:
+                    break
+            for feed in ([] if xhs_blocked else feeds[:note_limit]):
                 progress("读取小红书正文与评论样本")
                 try:
                     result = await xhs.detail(feed["id"], xsec_token=feed.get("xsecToken"),
@@ -111,7 +117,10 @@ async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: i
                 except Exception as error:
                     bundle["errors"].append({"source": "xiaohongshu", "stage": "detail",
                                              "noteId": feed["id"], **public_error(error)})
+                    xhs_blocked = getattr(error, "code", None) in SESSION_GATES
                 persist()
+                if xhs_blocked:
+                    break
     except Exception as error:
         bundle["errors"].append({"source": "xiaohongshu", "stage": "session", **public_error(error)})
     persist()
@@ -136,6 +145,9 @@ async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: i
                     except Exception as error:
                         bundle["errors"].append({"source": "dianping", "stage": "detail",
                                                  "shopId": shop["id"], **public_error(error)})
+                        if getattr(error, "code", None) in SESSION_GATES:
+                            persist()
+                            break
                     persist()
         except Exception as error:
             bundle["errors"].append({"source": "dianping", "stage": "search", **public_error(error)})
