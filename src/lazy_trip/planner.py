@@ -251,5 +251,5 @@ def plan(request: dict, candidates: list[dict], snapshot: dict,
             "weather": weather, "advisory": advisory, "main": best, "indoorAlternative": alternate,
             "excluded": excluded, "missingRoutes": sorted(missing_routes), "evidence": sources,
             "limits": ["高德日间/夜间天气，不含逐小时降雨与预警", "不自动预约、下单或支付",
-                       "点评评论以网页实际可见数据为准", "高德耗时为查询时估计，不保证未来班次或路况",
+                       "商家评分不代表已读取完整评论", "高德耗时为查询时估计，不保证未来班次或路况",
                        "当前 AI 负责语义提炼与官方 MCP 调用；本 CLI 没有独立大模型宿主"]}

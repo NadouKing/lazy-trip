@@ -7,7 +7,7 @@ Read `skills/daytrip-planner/SKILL.md` for travel planning and `docs/architectur
 ## Ownership and layers
 
 - Python 3.14 standard GIL build, uv, src layout, hatchling. Keep the project language Python; a platform library may execute JavaScript inside Chrome.
-- CLI parses arguments and writes JSON. Research calls `xiaohongshu_tools.XiaohongshuClient` and `dazhongdianping_tools.DianpingClient` directly; never shell out to their CLIs.
+- CLI parses arguments and writes JSON. Research calls `xiaohongshu_tools.XiaohongshuClient` directly; never shell out to its CLI. Dianping is retired: no dependency, optional extra, browser probe or adapter. Ignore legacy Dianping config without reading its profile.
 - Platform libraries own browsers, profiles and page parsing. This repository owns requirements, provenance, official MCP handoff, scheduling and reporting. Platform packages do not import lazy-trip.
 - Official Amap MCP already covers maps and weather. Only generate tasks and consume real receipts here; no alternate driver, credential lookup or Key extraction.
 - Current AI reads evidence, extracts candidates and calls official MCP. Do not present the CLI as an autonomous LLM host.

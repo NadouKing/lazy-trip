@@ -1,4 +1,4 @@
-"""Serial, read-only evidence collection through the two Python libraries."""
+"""Read-only Xiaohongshu evidence; the host uses official Amap for merchant checks."""
 
 from collections.abc import Callable
 
@@ -44,21 +44,16 @@ def _items(result: dict) -> list[dict]:
     return data["items"]
 
 
-async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: int = 2,
+async def collect(request: dict, *, out=None, note_limit: int = 4,
                   comment_limit: int = 20, progress: Callable[[str], None] | None = None,
-                  xhs_options: dict | None = None, dp_options: dict | None = None,
-                  xhs_factory=None, dp_factory=None) -> dict:
+                  xhs_options: dict | None = None, xhs_factory=None) -> dict:
     request = validate_request(request)
     if type(note_limit) is not int or not 1 <= note_limit <= 6 \
-            or type(shop_limit) is not int or not 0 <= shop_limit <= 3 \
             or type(comment_limit) is not int or not 0 <= comment_limit <= 100:
-        raise TripError("invalid_limit", "notes 限 1–6，shops 限 0–3，comments 限 0–100。")
+        raise TripError("invalid_limit", "notes 限 1–6，comments 限 0–100。")
     if xhs_factory is None:
         from xiaohongshu_tools import XiaohongshuClient
         xhs_factory = XiaohongshuClient
-    if dp_factory is None:
-        from dazhongdianping_tools import DianpingClient
-        dp_factory = DianpingClient
     progress = progress or (lambda _: None)
     bundle = {"schemaVersion": 1, "collectedAt": now(), "request": public_data(request),
               "searches": [], "evidence": [], "errors": [], "excludedSearchItems": []}
@@ -124,33 +119,6 @@ async def collect(request: dict, *, out=None, note_limit: int = 4, shop_limit: i
     except Exception as error:
         bundle["errors"].append({"source": "xiaohongshu", "stage": "session", **public_error(error)})
     persist()
-    if shop_limit:
-        try:
-            async with dp_factory(**(dp_options or {})) as dp:
-                keyword = research.get("foodKeyword") or f"{request['area']} 美食"
-                progress("大众点评搜索")
-                result = await dp.search(keyword, city=request["city"], limit=5)
-                shops = _items(result)
-                bundle["searches"].append(public_data({**result, "keyword": keyword}))
-                for shop in shops[:shop_limit]:
-                    progress("读取点评商家详情")
-                    try:
-                        detail = await dp.detail(shop["id"])
-                        data = detail.get("data", {})
-                        bundle["evidence"].append(public_data({
-                            **data, "id": f"dp:{shop['id']}", "shopId": data.get("id", shop["id"]),
-                            "source": "dianping", "sourceUrl": data.get("url") or shop.get("url"),
-                            "fetchedAt": detail.get("fetchedAt"), "method": detail.get("method"),
-                            "elapsedMs": detail.get("elapsedMs")}))
-                    except Exception as error:
-                        bundle["errors"].append({"source": "dianping", "stage": "detail",
-                                                 "shopId": shop["id"], **public_error(error)})
-                        if getattr(error, "code", None) in SESSION_GATES:
-                            persist()
-                            break
-                    persist()
-        except Exception as error:
-            bundle["errors"].append({"source": "dianping", "stage": "search", **public_error(error)})
     bundle["completedAt"] = now()
     bundle = public_data(bundle)
     if out:

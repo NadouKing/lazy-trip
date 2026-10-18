@@ -1,9 +1,12 @@
 import asyncio
+import builtins
 import json
+import sys
+from types import SimpleNamespace
 
 import pytest
 
-from lazy_trip.cli import browser_options, main, parser
+from lazy_trip.cli import browser_options, doctor, main, parser
 from lazy_trip.errors import TripError, public_error
 from lazy_trip.io import public_data
 from lazy_trip.research import collect, normalize_note
@@ -36,15 +39,6 @@ class Xhs:
                          "commentsHasMore": True}}
 
 
-class Dp(Xhs):
-    async def search(self, keyword, *, city, limit):
-        return {"data": {"items": [{"id": "shop", "name": "餐馆"}]}}
-
-    async def detail(self, identifier):
-        return {"data": {"id": identifier, "name": "餐馆", "reviews": [],
-                         "reviewsStatus": "not_visible_on_page"}}
-
-
 def test_readable_comments_only_counted():
     note = normalize_note({"data": {"comments": [{"content": ""}, {"content": "可以去"}]}}
                           , {"id": "n"})
@@ -53,29 +47,75 @@ def test_readable_comments_only_counted():
     assert note["visualContentRead"] is False
 
 
-def test_direct_library_contract_partial_sources_and_sanitized_disk(sample, tmp_path):
+def test_default_research_does_not_import_or_call_dianping(sample, monkeypatch):
+    original = builtins.__import__
+
+    def guarded(name, *args, **kwargs):
+        if name.startswith("dazhongdianping_tools"):
+            raise AssertionError("research must not import retired Dianping")
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", guarded)
+    result = asyncio.run(collect(sample["request"], xhs_factory=Xhs))
+    assert result["errors"] == []
+    assert len(result["evidence"]) == 1
+    assert result["evidence"][0]["source"] == "xiaohongshu"
+
+
+def test_retired_dianping_cli_flags_are_rejected():
+    with pytest.raises(SystemExit):
+        parser().parse_args(["doctor", "--dianping"])
+    with pytest.raises(SystemExit):
+        parser().parse_args(["research", "--request", "r.json", "--out", "e.json", "--shops", "1"])
+
+
+def test_live_doctor_does_not_probe_retired_dianping(tmp_path, monkeypatch):
+    class Session(Xhs):
+        async def check_session(self):
+            return {"data": {"state": "ready", "authenticated": True}}
+
+    original = builtins.__import__
+
+    def guarded(name, *args, **kwargs):
+        if name.startswith("dazhongdianping_tools"):
+            raise AssertionError("doctor must not import retired Dianping")
+        return original(name, *args, **kwargs)
+
+    config = tmp_path / "settings.json"
+    config.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(builtins, "__import__", guarded)
+    monkeypatch.setitem(sys.modules, "xiaohongshu_tools", SimpleNamespace(XiaohongshuClient=Session))
+    args = parser().parse_args(["doctor", "--live", "--config", str(config)])
+    result = asyncio.run(doctor(args))
+    assert result["xiaohongshu"]["data"]["state"] == "ready"
+    assert "dianping" not in result
+    assert "dazhongdianping-tools" not in result["packages"]
+
+
+def test_cli_default_research_has_no_dianping_queries():
+    args = parser().parse_args(["research", "--request", "request.json", "--out", "evidence.json"])
+    assert not hasattr(args, "shops") and not hasattr(args, "dp_profile")
+
+
+def test_direct_library_contract_and_sanitized_disk(sample, tmp_path):
     Xhs.calls = []
     output = tmp_path / "evidence.json"
-    result = asyncio.run(collect(sample["request"], out=output, xhs_factory=Xhs, dp_factory=Dp))
-    assert len(result["evidence"]) == 2
+    result = asyncio.run(collect(sample["request"], out=output, xhs_factory=Xhs))
+    assert len(result["evidence"]) == 1
     assert result["evidence"][0]["commentSampleCount"] == 1
-    assert result["evidence"][1]["reviewsStatus"] == "not_visible_on_page"
-    assert result["evidence"][1]["id"] == "dp:shop"
-    assert result["evidence"][1]["shopId"] == "shop"
     assert len(result["excludedSearchItems"]) == 2
     assert Xhs.calls[:3] == ["search", "search", "detail"]
     assert "private-token" not in output.read_text(encoding="utf-8")
     assert "xsecToken" not in json.dumps(result)
 
 
-def test_xhs_failure_still_gets_dianping(sample):
+def test_xhs_session_failure_is_partial_and_safe(sample):
     class BadXhs(Xhs):
         async def __aenter__(self):
             raise RuntimeError("secret signed URL must not leak")
 
-    result = asyncio.run(collect(sample["request"], xhs_factory=BadXhs, dp_factory=Dp))
-    assert len(result["evidence"]) == 1
-    assert result["evidence"][0]["source"] == "dianping"
+    result = asyncio.run(collect(sample["request"], xhs_factory=BadXhs))
+    assert result["evidence"] == []
     assert "secret" not in json.dumps(result)
     assert result["errors"][0]["stage"] == "session"
 
@@ -101,7 +141,7 @@ def test_platform_error_codes_are_adapted_without_raw_messages(code):
     assert "secret" not in json.dumps(result) and "private-token" not in json.dumps(result)
 
 
-def test_verification_stops_only_affected_source_and_retains_evidence(sample):
+def test_verification_stops_remaining_xhs_reads_and_retains_searches(sample):
     calls = []
 
     class GateError(Exception):
@@ -112,24 +152,25 @@ def test_verification_stops_only_affected_source_and_retains_evidence(sample):
             calls.append("xhs-search")
             raise GateError("private signed URL")
 
-    result = asyncio.run(collect(sample["request"], xhs_factory=GatedXhs, dp_factory=Dp))
+    result = asyncio.run(collect(sample["request"], xhs_factory=GatedXhs))
     assert calls == ["xhs-search"]
     assert result["errors"][0]["code"] == "verification_required"
-    assert result["evidence"][0]["source"] == "dianping"
+    assert result["evidence"] == []
 
-    class GatedDp(Dp):
+    class GatedDetail(Xhs):
         async def search(self, *args, **kwargs):
-            return {"data": {"items": [{"id": "one"}, {"id": "two"}]}}
+            return {"data": {"items": [{"id": "one", "title": "散步"},
+                                         {"id": "two", "title": "吃饭"}]}}
 
-        async def detail(self, identifier):
-            calls.append("dp-detail")
+        async def detail(self, identifier, **kwargs):
+            calls.append("xhs-detail")
             raise GateError("private signed URL")
 
     calls.clear()
-    result = asyncio.run(collect(sample["request"], xhs_factory=Xhs, dp_factory=GatedDp,
-                                 shop_limit=2))
-    assert calls == ["dp-detail"]
-    assert len(result["evidence"]) == 1
+    result = asyncio.run(collect(sample["request"], xhs_factory=GatedDetail))
+    assert calls == ["xhs-detail"]
+    assert len(result["searches"]) == 2
+    assert result["evidence"] == []
     assert result["errors"][0]["code"] == "verification_required"
     assert "private signed URL" not in json.dumps(result)
 
@@ -145,10 +186,10 @@ def test_config_priorities_and_does_not_accept_credentials(tmp_path, monkeypatch
     config.write_text(json.dumps({"xiaohongshu": {"profile_dir": "xhs-profile", "timeout": 40},
                                   "dianping": {"profile_dir": "dp-profile"}}), encoding="utf-8")
     args = parser().parse_args(["doctor", "--config", str(config), "--timeout", "20", "--headed"])
-    xhs, dp = browser_options(args)
+    xhs = browser_options(args)
     assert xhs["profile_dir"] == "xhs-profile"
-    assert dp["profile_dir"] == "dp-profile"
-    assert xhs["timeout"] == 20 and dp["timeout"] == 20
+    assert "dp-profile" not in json.dumps(xhs)
+    assert xhs["timeout"] == 20
     assert xhs["headless"] is False
     config.write_text('{"xiaohongshu":{"cookie":"secret"}}', encoding="utf-8")
     with pytest.raises(TripError) as error:

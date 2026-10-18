@@ -6,6 +6,7 @@ This script does not launch browsers or inspect credentials.
 
 import importlib
 import importlib.metadata
+import importlib.util
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -14,9 +15,9 @@ from tempfile import TemporaryDirectory
 def main():
     checkout = Path(__file__).resolve().parents[1]
     packages = {}
-    for module_name, distribution in (("lazy_trip", "lazy-trip"),
-                                      ("xiaohongshu_tools", "xiaohongshu-tools"),
-                                      ("dazhongdianping_tools", "dazhongdianping-tools")):
+    required = [("lazy_trip", "lazy-trip"), ("xiaohongshu_tools", "xiaohongshu-tools")]
+    assert importlib.util.find_spec("dazhongdianping_tools") is None
+    for module_name, distribution in required:
         module = importlib.import_module(module_name)
         source = Path(module.__file__).resolve()
         if source.is_relative_to(checkout.parent):

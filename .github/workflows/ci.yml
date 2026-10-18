@@ -20,5 +20,6 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked ruff check .
       - run: uv run --locked pytest -q
+      - run: uv run --locked python -c "import importlib.util; assert importlib.util.find_spec('dazhongdianping_tools') is None"
       - run: uv build
       - run: git diff --check

@@ -3,12 +3,14 @@
 ## 一次安装
 
 1. 安装 uv、Git、Chrome/Chromium。
-2. clone 主仓，`uv sync --locked`；uv 按 `.python-version` 准备标准 Python3.14，并把三包及依赖安装到主仓 `.venv`。
+2. clone 主仓，`uv sync --locked`；uv 按 `.python-version` 准备标准 Python3.14，并把主应用、小红书工具及依赖安装到主仓 `.venv`。
 3. `uv run lazy-trip doctor` 检查版本和浏览器；需要时加 `--chrome` 指定浏览器。
-4. 使用 `uv run xhs login`、`uv run dp login` 在各自独立窗口完成登录。`uv run lazy-trip doctor --live` 验证状态。
+4. 使用 `uv run xhs login` 在小红书可见专用窗口完成登录。`uv run lazy-trip doctor --live --headed` 验证状态。
 5. 在 AI 宿主保留已配置官方高德 MCP，然后按 README/Skill 研究、提炼、查询和排程。
 
 不要求 Node、Go 或额外模型 API。浏览器是外部程序，登录是账号自己的交互操作，不因安装包就自动完成。此版本既不提取高德密钥，也不把浏览器状态塞进 wheel。
+
+点评已退出依赖、research 和 doctor，不提供可选安装项。旧配置里的 `dianping` 段忽略；不删除该平台原有登录状态。
 
 ## 常见情况
 
@@ -22,4 +24,4 @@
 
 ## 升级
 
-平台网页易变，升级先在开发环境跑解析/错误与真实只读验收；确认再更新两个 Git SHA、uv.lock 和版本。保留主环境锁文件，浏览器 profile 与项目分开，不在升级时重建登录目录。
+平台网页易变，升级先在开发环境跑解析/错误与真实只读验收；确认再更新小红书 Git SHA、uv.lock 和版本。保留主环境锁文件，浏览器 profile 与项目分开，不在升级时重建登录目录。
